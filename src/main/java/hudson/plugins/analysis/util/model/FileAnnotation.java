@@ -43,7 +43,14 @@ public interface FileAnnotation extends Comparable<FileAnnotation> {
      *
      * @return The person who caused this annotation.
      */
-    String getCulprit();
+    String getCulpritName();
+
+    /**
+     * Get the email of the person who caused this annotation.
+     *
+     * @return The email of the person who caused this annotation.
+     */
+    String getCulpritEmail();
 
     /**
      * Get the id of the commit that caused this annotation.
@@ -54,9 +61,16 @@ public interface FileAnnotation extends Comparable<FileAnnotation> {
     /**
      * Set the person who caused this annotation.
      *
-     * @param culprit the person who caused this annotation.
+     * @param culpritName the person who caused this annotation.
      */
-    void setCulprit(String culprit);
+    void setCulpritName(String culpritName);
+
+    /**
+     * Set the email of the person who caused this annotation.
+     *
+     * @param culpritEmail the person who caused this annotation.
+     */
+    void setCulpritEmail(String culpritEmail);
 
     /**
      * Set the id of the commit that caused this annotation.

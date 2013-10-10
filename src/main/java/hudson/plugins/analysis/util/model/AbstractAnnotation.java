@@ -64,12 +64,10 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
     private /*almost final*/ String category;
     /** Bug type. */
     private /*almost final*/ String type;
-	/**
-	 * The collection of line ranges with owner information.
-	 */
-	private Collection<OwnedLineRange> ownedLineRanges;
     /** Who caused this annotation. */
-    private String culprit;
+    private String culpritName;
+    /** Who caused this annotation. */
+    private String culpritEmail;
     /** Which commit caused this annotation. */
     private String culpritCommitId;
     /**
@@ -159,7 +157,8 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
         type = copy.getType();
         moduleName = TreeString.of(copy.getModuleName());
         packageName = TreeString.of(copy.getPackageName());
-        culprit = copy.getCulprit();
+        culpritName = copy.getCulpritName();
+        culpritEmail = copy.getCulpritEmail();
         culpritCommitId = copy.getCulpritCommitId();
     }
 
@@ -184,8 +183,11 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
         if (type != null) {
             type = type.intern();
         }
-        if(culprit != null) {
-            culprit = culprit.intern();
+        if(culpritName != null) {
+            culpritName = culpritName.intern();
+        }
+        if(culpritEmail != null) {
+            culpritEmail = culpritEmail.intern();
         }
         if(culpritCommitId != null) {
             culpritCommitId = culpritCommitId.intern();
@@ -427,23 +429,23 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
     }
 
     /** {@inheritDoc} */
-    public Collection<OwnedLineRange> getOwnedLineRanges() {
-        return ownedLineRanges == null ? Collections.<OwnedLineRange>emptyList() : Collections.unmodifiableCollection(ownedLineRanges);
+    public String getCulpritName() {
+        return culpritName;
     }
 
     /** {@inheritDoc} */
-    public void setOwnedLineRanges(Collection<OwnedLineRange> ownedLineRanges) {
-        this.ownedLineRanges = ownedLineRanges;
+    public void setCulpritName(String culpritName) {
+        this.culpritName = culpritName;
     }
 
     /** {@inheritDoc} */
-    public String getCulprit() {
-        return culprit;
+    public String getCulpritEmail() {
+        return culpritEmail;
     }
 
     /** {@inheritDoc} */
-    public void setCulprit(String culprit) {
-        this.culprit = culprit;
+    public void setCulpritEmail(String culpritEmail) {
+        this.culpritEmail = culpritEmail;
     }
 
     /** {@inheritDoc} */
@@ -511,7 +513,6 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
         result = prime * result + primaryColumnEnd;
         result = prime * result + ((priority == null) ? 0 : priority.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((culprit == null) ? 0 : culprit.hashCode());
         result = prime * result + ((culpritCommitId == null) ? 0 : culpritCommitId.hashCode());
         return result;
     }
@@ -592,11 +593,18 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
         else if (!type.equals(other.type)) {
             return false;
         }
-        if (culprit == null) {
-            if (other.culprit != null) {
+        if (culpritName == null) {
+            if (other.culpritName != null) {
                 return false;
             }
-        } else if(!culprit.equals(other.culprit)) {
+        } else if(!culpritName.equals(other.culpritName)) {
+            return false;
+        }
+        if (culpritEmail == null) {
+            if (other.culpritEmail != null) {
+                return false;
+            }
+        } else if(!culpritEmail.equals(other.culpritEmail)) {
             return false;
         }
         if (culpritCommitId == null) {

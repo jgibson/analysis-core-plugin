@@ -135,12 +135,11 @@ public class GitFileAnnotationBlamer {
             }
             PersonIdent who = blame.getSourceAuthor(annot.getPrimaryLineNumber());
             RevCommit commit = blame.getSourceCommit(annot.getPrimaryLineNumber());
-            String whos = who == null ? null : who.getEmailAddress();
-            String commits = commit == null ? null : commit.getName();
-            if((whos != null) && (commits != null)) {
-                annot.setCulprit(whos);
-                annot.setCulpritCommitId(commits);
+            if(who != null) {
+                annot.setCulpritName(who.getName());
+                annot.setCulpritEmail(who.getEmailAddress());
             }
+            annot.setCulpritCommitId(commit == null ? null : commit.getName());
         }
     }
 }

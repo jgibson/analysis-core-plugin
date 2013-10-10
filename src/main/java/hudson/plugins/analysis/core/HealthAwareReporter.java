@@ -299,7 +299,7 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
         }
 
         Result currentResult = getCurrentResult(build);
-        PluginLogger logger = new LoggerFactory(receiveSettingsFromMaster(build)).createLogger(listener.getLogger(), pluginName);
+        final PluginLogger logger = new LoggerFactory(receiveSettingsFromMaster(build)).createLogger(listener.getLogger(), pluginName);
 
         if (!canContinue(currentResult)) {
             logger.log("Skipping reporter since build result is " + currentResult);
@@ -310,7 +310,7 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
             return true;
         }
 
-        ParserResult result;
+        final ParserResult result;
         try {
             result = perform(build, pom, mojo, logger);
 
@@ -327,18 +327,18 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
         logger.logLines(result.getLogMessages());
 
         setEncoding(pom, result, logger);
-        registerResultsOnMaster(build, result, logger);
+        registerResultsOnMaster(build, result, logger, listener);
         copyFilesWithAnnotationsToBuildFolder(logger, build.getRootDir(), result.getAnnotations());
 
         return true;
     }
 
-    private void registerResultsOnMaster(final MavenBuildProxy build, final ParserResult result, final PluginLogger logger)
+    private void registerResultsOnMaster(final MavenBuildProxy build, final ParserResult result, final PluginLogger logger, final BuildListener listener)
             throws IOException, InterruptedException {
         @SuppressWarnings("serial")
         String resultLog = build.execute(new BuildCallable<String, IOException>() {
             public String call(final MavenBuild mavenBuild) throws IOException, InterruptedException {
-                return registerResults(result, mavenBuild);
+                return registerResults(result, mavenBuild, listener);
             }
         });
         logger.logLines(resultLog);
@@ -360,10 +360,11 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
             }});
     }
 
-    private String registerResults(final ParserResult result, final MavenBuild mavenBuild) {
+    private String registerResults(final ParserResult result, final MavenBuild mavenBuild, final BuildListener listener) throws IOException, InterruptedException {
+        StringPluginLogger pluginLogger = new StringPluginLogger(pluginName);
+        new BlameAssigner().assignBlame(mavenBuild, result, pluginName, pluginLogger, listener);
         T buildResult = createResult(mavenBuild, result);
 
-        StringPluginLogger pluginLogger = new StringPluginLogger(pluginName);
         if (new NullHealthDescriptor(this).isThresholdEnabled()) {
             String baseUrl = getDescriptor().getPluginResultUrlName();
             buildResult.evaluateStatus(thresholds, useDeltaValues, canComputeNew(), pluginLogger, baseUrl);
@@ -374,6 +375,7 @@ public abstract class HealthAwareReporter<T extends BuildResult> extends MavenRe
         if (referenceBuild != null) {
             pluginLogger.log("Computing warning deltas based on reference build " + referenceBuild.getDisplayName());
         }
+
         return pluginLogger.toString();
     }
 

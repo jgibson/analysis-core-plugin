@@ -20,6 +20,7 @@ import hudson.model.BuildListener;
 import hudson.model.Result;
 
 import hudson.plugins.analysis.Messages;
+import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
 import hudson.plugins.analysis.util.LoggerFactory;
 import hudson.plugins.analysis.util.PluginLogger;
 import hudson.plugins.analysis.util.model.AbstractAnnotation;
@@ -292,7 +293,7 @@ public abstract class HealthAwareMavenReporter extends MavenReporter implements 
     @Override
     public final boolean postExecute(final MavenBuildProxy build, final MavenProject pom, final MojoInfo mojo,
             final BuildListener listener, final Throwable error) throws InterruptedException, IOException {
-        PluginLogger logger = new LoggerFactory().createLogger(listener.getLogger(), pluginName);
+        final PluginLogger logger = new LoggerFactory().createLogger(listener.getLogger(), pluginName);
         if (!acceptGoal(mojo.getGoal())) {
             return true;
         }

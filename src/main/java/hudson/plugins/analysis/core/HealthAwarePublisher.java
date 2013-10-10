@@ -6,7 +6,9 @@ import hudson.Launcher;
 
 import hudson.model.Result;
 import hudson.model.AbstractBuild;
+import hudson.model.TaskListener;
 
+import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
 import hudson.plugins.analysis.util.PluginLogger;
 
 import hudson.tasks.BuildStep;
@@ -204,6 +206,22 @@ public abstract class HealthAwarePublisher extends HealthAwareRecorder {
      */
     protected abstract BuildResult perform(AbstractBuild<?, ?> build, PluginLogger logger)
             throws InterruptedException, IOException;
+
+    /**
+     * Assign blame to the results of this plug-in.
+     *
+     * @param build the build in question.
+     * @param parserResult the results of the analysis.
+     * @param pluginName the name of the logger.
+     * @param logger the logger to report the progress to.
+     * @throws InterruptedException if the build is interrupted by the user.
+     * @throws IOException if there is an error assigning blame.
+     */
+    protected void assignBlame(AbstractBuild<?, ?> build, ParserResult parserResult,
+            String pluginName, PluginLogger logger)
+            throws InterruptedException, IOException {
+        new BlameAssigner().assignBlame(build, parserResult, pluginName, logger, TaskListener.NULL);
+    }
 
     // CHECKSTYLE:OFF
     @Deprecated

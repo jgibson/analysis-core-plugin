@@ -16,6 +16,9 @@
       <td class="pane-header">${%Priority}</td>
       <td class="pane-header">${%Type}</td>
       <td class="pane-header">${%Category}</td>
+      <!-- TODO: L10N -->
+      <td class="pane-header">Culprit</td>
+      <td class="pane-header">Rev Id</td>
     </tr>
     <tbody>
       <j:forEach var="warning" items="${it.container.sortedAnnotations}">
@@ -55,6 +58,12 @@
           </td>
           <td class="pane">
             <div tooltip="${warning.message}"> ${warning.category} </div>
+          </td>
+          <td class="pane">
+            <div tooltip="${warning.message}"> ${warning.culprit} </div>
+          </td>
+          <td class="pane">
+            <div tooltip="${warning.message}"> ${warning.culpritCommitId} </div>
           </td>
         </tr>
       </j:forEach>

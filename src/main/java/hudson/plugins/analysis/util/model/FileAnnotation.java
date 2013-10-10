@@ -39,6 +39,33 @@ public interface FileAnnotation extends Comparable<FileAnnotation> {
     Collection<LineRange> getLineRanges();
 
     /**
+     * Get the person who caused this annotation.
+     *
+     * @return The person who caused this annotation.
+     */
+    String getCulprit();
+
+    /**
+     * Get the id of the commit that caused this annotation.
+     * @return The id of the commit that caused this annotation.
+     */
+    String getCulpritCommitId();
+
+    /**
+     * Set the person who caused this annotation.
+     *
+     * @param culprit the person who caused this annotation.
+     */
+    void setCulprit(String culprit);
+
+    /**
+     * Set the id of the commit that caused this annotation.
+     *
+     * @param commitId the commit that caused this annotation.
+     */
+    void setCulpritCommitId(String commitId);
+
+    /**
      * Returns the unique key of this annotation.
      *
      * @return the unique key of this annotation.

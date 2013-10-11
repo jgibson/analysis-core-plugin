@@ -38,6 +38,15 @@
             active: false
         }), myTabs);
     </j:if>
+    <!-- I10N -->
+    <j:if test="${it.container.culprits.size() > 1}">
+        YAHOO.plugin.Dispatcher.delegate (new YAHOO.widget.Tab({
+            label: 'People',
+            dataSrc: 'tab.culprits/',
+            cacheData: true,
+            active: false
+        }), myTabs);
+    </j:if>
     <j:if test="${it.container.categories.size() > 1}">
         YAHOO.plugin.Dispatcher.delegate (new YAHOO.widget.Tab({
             label: '${%Categories}',

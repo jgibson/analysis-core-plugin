@@ -39,7 +39,10 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         /** Package level. */
         PACKAGE,
         /** File level. */
-        FILE}
+        FILE,
+        /** User level. */
+        USER,
+    }
 
     /** The annotations mapped by their key. */
     @SuppressWarnings("Se")
@@ -50,6 +53,8 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
     private transient Map<String, Set<FileAnnotation>> annotationsByCategory;
     /** The annotations mapped by type. */
     private transient Map<String, Set<FileAnnotation>> annotationsByType;
+    /** The culprit annotations collections mapped by name. */
+    private transient Map<String, CulpritAnnotationContainer> culpritsByName;
     /** The files that contain annotations mapped by file name. */
     private transient Map<String, WorkspaceFile> filesByName;
     /** The packages that contain annotations mapped by package name. */
@@ -62,6 +67,8 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
     private transient Map<Integer, JavaPackage> packagesByHashCode;
     /** The modules that contain annotations mapped by hash code of module name. */
     private transient Map<Integer, MavenModule> modulesByHashCode;
+    /** The culprits that contain annotations mapped by hash code of culprit name. */
+    private transient Map<Integer, CulpritAnnotationContainer> culpritsByHashCode;
     /** The modules that contain annotations mapped by hash code of category name. */
     private transient Map<Integer, Set<FileAnnotation>> categoriesByHashCode;
     /** The modules that contain annotations mapped by hash code of type name. */
@@ -158,12 +165,14 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         }
         annotationsByCategory = new HashMap<String, Set<FileAnnotation>>();
         annotationsByType = new HashMap<String, Set<FileAnnotation>>();
+        culpritsByName = new HashMap<String, CulpritAnnotationContainer>();
         filesByName = new HashMap<String, WorkspaceFile>();
         packagesByName = new HashMap<String, JavaPackage>();
         modulesByName = new HashMap<String, MavenModule>();
         filesByHashCode = new HashMap<Integer, WorkspaceFile>();
         packagesByHashCode = new HashMap<Integer, JavaPackage>();
         modulesByHashCode = new HashMap<Integer, MavenModule>();
+        culpritsByHashCode = new HashMap<Integer, CulpritAnnotationContainer>();
         categoriesByHashCode = new HashMap<Integer, Set<FileAnnotation>>();
         typesByHashCode = new HashMap<Integer, Set<FileAnnotation>>();
     }
@@ -201,6 +210,9 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         }
         if (StringUtils.isNotBlank(annotation.getType())) {
             addType(annotation);
+        }
+        if(hierarchy != Hierarchy.USER) {
+            addCulpritName(annotation);
         }
         if (hierarchy == Hierarchy.PROJECT) {
             addModule(annotation);
@@ -305,6 +317,25 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
             filesByHashCode.put(file.getName().hashCode(), file);
         }
         filesByName.get(fileName).addAnnotation(annotation);
+    }
+
+    /**
+     * Indexes an annotation by culprit name.
+     *
+     * @param annotation the new annotation
+     */
+    private void addCulpritName(final FileAnnotation annotation) {
+        String culpritName = annotation.getCulpritName();
+        // We'll just assume that culpritName will never be empty
+        if(culpritName == null) {
+            culpritName = "";
+        }
+        if(!culpritsByName.containsKey(culpritName)) {
+            CulpritAnnotationContainer container = new CulpritAnnotationContainer(culpritName);
+            culpritsByName.put(culpritName, container);
+            culpritsByHashCode.put(culpritName.hashCode(), container);
+        }
+        culpritsByName.get(culpritName).addAnnotation(annotation);
     }
 
     /**
@@ -730,6 +761,41 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
             return filesByHashCode.get(hashCode);
         }
         throw new NoSuchElementException("File by hashcode not found: " + hashCode);
+    }
+
+    /**
+     * Gets the names of the culprits in this container.
+     *
+     * @return the names of the culprits.
+     */
+    public Collection<CulpritAnnotationContainer> getCulprits() {
+        ArrayList<CulpritAnnotationContainer> culprits = new ArrayList<CulpritAnnotationContainer>(culpritsByName.values());
+        Collections.sort(culprits);
+        return Collections.unmodifiableCollection(culprits);
+    }
+
+    /**
+     * Gets the annotation container for the specified culprit in this container.
+     *
+     * @return the names of the culprits.
+     */
+    public CulpritAnnotationContainer getCulprit(final String culpritName) {
+        if (culpritsByName.containsKey(culpritName)) {
+            return culpritsByName.get(culpritName);
+        }
+        throw new NoSuchElementException("Culprit not found: " + culpritName);
+    }
+
+    /**
+     * Gets the annotation container for the specified culprit in this container.
+     *
+     * @return the names of the culprits.
+     */
+    public CulpritAnnotationContainer getCulprit(final int hashCode) {
+        if (culpritsByHashCode.containsKey(hashCode)) {
+            return culpritsByHashCode.get(hashCode);
+        }
+        throw new NoSuchElementException("Culprit hashcode not found: " + hashCode);
     }
 
     /**

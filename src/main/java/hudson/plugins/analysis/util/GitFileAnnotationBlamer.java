@@ -6,13 +6,20 @@ import hudson.model.TaskListener;
 import hudson.model.User;
 import hudson.plugins.analysis.core.ParserResult;
 import hudson.plugins.analysis.util.model.FileAnnotation;
+import hudson.plugins.git.GitChangeSet;
 import hudson.plugins.git.GitSCM;
+import hudson.plugins.git.browser.GitRepositoryBrowser;
+import hudson.scm.RepositoryBrowser;
 import hudson.scm.SCM;
 import hudson.tasks.Mailer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jgit.api.BlameCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -191,5 +198,42 @@ public class GitFileAnnotationBlamer {
 //            }
 //        }
         return user;
+    }
+
+    public static Map<String, URL> computeUrlsForCommitIds(SCM scm, Set<String> commitIds) {
+        if(!(scm instanceof GitSCM)) {
+            return null;
+        }
+        if(commitIds.isEmpty()) {
+            return null;
+        }
+
+        GitSCM gscm = (GitSCM) scm;
+        GitRepositoryBrowser browser = gscm.getBrowser();
+        if(browser == null) {
+            RepositoryBrowser<?> ebrowser = gscm.getEffectiveBrowser();
+            if(ebrowser instanceof GitRepositoryBrowser) {
+                browser = (GitRepositoryBrowser) ebrowser;
+            } else {
+                return null;
+            }
+        }
+
+        // This is a dirty hack because the only way to create changesets is to do it by parsing git log messages
+        // Because what we're doing is fairly dangerous (creating minimal commit messages) just give up if there is an error
+        try {
+            HashMap<String, URL> result = new HashMap<String, URL>((int) (commitIds.size() * 1.5f));
+            for(final String commitId : commitIds) {
+                GitChangeSet cs = new GitChangeSet(Collections.singletonList("commit " + commitId), true);
+                if(cs.getId() != null) {
+                    result.put(commitId, browser.getChangeSetLink(cs));
+                }
+            }
+
+            return result;
+        } catch(Exception e) {
+            // TODO: log?
+            return null;
+        }
     }
 }

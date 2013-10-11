@@ -85,7 +85,14 @@
                   -
                 </j:when>
                 <j:otherwise>
-                  ${warning.culpritCommitId}
+                  <j:choose>
+                    <j:when test="${it.container.urlForCommitId(warning.culpritCommitId) == null}">
+                      ${warning.culpritCommitId}
+                    </j:when>
+                    <j:otherwise>
+                      <a href="${it.container.urlForCommitId(warning.culpritCommitId)}">${warning.culpritCommitId}</a>
+                    </j:otherwise>
+                  </j:choose>
                 </j:otherwise>
               </j:choose>
             </div>

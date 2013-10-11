@@ -1,10 +1,16 @@
 package hudson.plugins.analysis.views;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.net.URL;
 
 import hudson.model.AbstractBuild;
 
+import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
 import hudson.plugins.analysis.util.model.FileAnnotation;
+import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 
 /**
  * Result object representing a dynamic tab.
@@ -16,6 +22,10 @@ public class TabDetail extends AbstractAnnotationsDetail {
     private static final long serialVersionUID = -1854984151887397361L;
     /** URL of the content to load. */
     private final String url;
+
+    private transient boolean commitUrlsAttempted;
+    /** A cache of URLs for commit ids. */
+    private transient Map<String, URL> commitUrls;
 
     /**
      * Creates a new instance of {@link TabDetail}.
@@ -75,6 +85,34 @@ public class TabDetail extends AbstractAnnotationsDetail {
      */
     public String getFixed() {
         return "fixed.jelly";
+    }
+
+    public URL urlForCommitId(String commitId) {
+        if(commitUrlsAttempted) {
+            return commitUrls == null ? null : commitUrls.get(commitId);
+        }
+        commitUrlsAttempted = true;
+
+        SCM scm = getOwner().getProject().getScm();
+        if((scm == null) || (scm instanceof NullSCM)) {
+            scm = getOwner().getProject().getRootProject().getScm();
+        }
+
+        final HashSet<String> commitIds = new HashSet<String>(getAnnotations().size());
+        for(final FileAnnotation annot : getAnnotations()) {
+            commitIds.add(annot.getCulpritCommitId());
+        }
+        commitIds.remove(null);
+        try {
+            commitUrls = GitFileAnnotationBlamer.computeUrlsForCommitIds(scm, commitIds);
+            if(commitUrls != null) {
+                return commitUrls.get(commitId);
+            }
+        } catch(NoClassDefFoundError e) {
+            // Git wasn't installed, ignore
+        }
+
+        return null;
     }
 }
 

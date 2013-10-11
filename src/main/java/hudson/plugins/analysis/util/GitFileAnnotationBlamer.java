@@ -142,13 +142,18 @@ public class GitFileAnnotationBlamer {
                 logger.log("No blame result available for: " + annot);
                 continue;
             }
-            PersonIdent who = blame.getSourceAuthor(annot.getPrimaryLineNumber());
-            RevCommit commit = blame.getSourceCommit(annot.getPrimaryLineNumber());
-            if(who != null) {
-                annot.setCulpritName(who.getName());
-                annot.setCulpritEmail(who.getEmailAddress());
+            int zeroline = annot.getPrimaryLineNumber() - 1;
+            try {
+                PersonIdent who = blame.getSourceAuthor(zeroline);
+                RevCommit commit = blame.getSourceCommit(zeroline);
+                if(who != null) {
+                    annot.setCulpritName(who.getName());
+                    annot.setCulpritEmail(who.getEmailAddress());
+                }
+                annot.setCulpritCommitId(commit == null ? null : commit.getName());
+            } catch(ArrayIndexOutOfBoundsException e) {
+                logger.log("Blame details were out of bounds for line number " + annot.getPrimaryLineNumber() + " in file " + child);
             }
-            annot.setCulpritCommitId(commit == null ? null : commit.getName());
         }
     }
 

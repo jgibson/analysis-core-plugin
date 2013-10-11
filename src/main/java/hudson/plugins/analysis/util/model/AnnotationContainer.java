@@ -218,6 +218,7 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
      *
      * @param annotation the new annotation
      */
+    @SuppressWarnings("SF_SWITCH_FALLTHROUGH")
     @java.lang.SuppressWarnings("fallthrough")
     private void updateMappings(final FileAnnotation annotation) {
         annotationsByPriority.get(annotation.getPriority()).add(annotation);
@@ -227,7 +228,7 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         if (StringUtils.isNotBlank(annotation.getType())) {
             addType(annotation);
         }
-        switch(hierarchy) {
+        switch (hierarchy) {
             case USER_PROJECT:
             case USER_MODULE:
             case USER_PACKAGE:
@@ -236,6 +237,7 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
             default:
                 addCulpritName(annotation);
         }
+        // CHECKSTYLE:OFF
         switch(hierarchy) {
             case PROJECT:
             case USER_PROJECT:
@@ -249,6 +251,7 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
                 break;
             default:
         }
+        // CHECKSTYLE:ON
     }
 
     /**
@@ -354,14 +357,14 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         String culpritName = annotation.getCulpritName();
         String culpritEmail = annotation.getCulpritEmail();
         // We'll just assume that these will never be empty (but could be null).
-        if(culpritName == null) {
+        if (culpritName == null) {
             culpritName = "";
         }
-        if(culpritEmail == null) {
+        if (culpritEmail == null) {
             culpritEmail = "";
         }
         String key = culpritName + culpritEmail;
-        if(!culpritsByName.containsKey(key)) {
+        if (!culpritsByName.containsKey(key)) {
             Hierarchy targeth = null;
             switch(hierarchy) {
                 case PROJECT:
@@ -813,9 +816,9 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
     }
 
     /**
-     * Gets the names of the culprits in this container.
+     * Gets the culprits of this container that have annotations.
      *
-     * @return the names of the culprits.
+     * @return the culprits with annotations.
      */
     public Collection<CulpritAnnotationContainer> getCulprits() {
         ArrayList<CulpritAnnotationContainer> culprits = new ArrayList<CulpritAnnotationContainer>(culpritsByName.values());
@@ -824,21 +827,25 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
     }
 
     /**
-     * Gets the annotation container for the specified culprit in this container.
+     * Gets the culprit with the key.
      *
-     * @return the names of the culprits.
+     * @param key the full name of the culprit with the email of the cuprit appended to it.
+     *  Unknown culprits should be indicated by the empty string.
+     * @return the culprit with the given key.
      */
-    public CulpritAnnotationContainer getCulprit(final String culpritName) {
-        if (culpritsByName.containsKey(culpritName)) {
-            return culpritsByName.get(culpritName);
+    public CulpritAnnotationContainer getCulprit(final String key) {
+        if (culpritsByName.containsKey(key)) {
+            return culpritsByName.get(key);
         }
-        throw new NoSuchElementException("Culprit not found: " + culpritName);
+        throw new NoSuchElementException("Culprit not found: " + key);
     }
 
     /**
-     * Gets the annotation container for the specified culprit in this container.
+     * Get the culprit with the given hash code.
      *
-     * @return the names of the culprits.
+     * @param hashCode the hash code of the culprit key (the full name of the
+     *  culprit with the email of the cuprit appended to it).  Unknown culprits should be indicated by 0.
+     * @return the culprit with the given hashCode.
      */
     public CulpritAnnotationContainer getCulprit(final int hashCode) {
         if (culpritsByHashCode.containsKey(hashCode)) {

@@ -1,5 +1,7 @@
 package hudson.plugins.analysis.views;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import hudson.model.AbstractBuild;
 import hudson.model.User;
 import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
@@ -20,22 +22,18 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
     private final String culpritName;
     private final String culpritEmail;
 
+    @SuppressWarnings("Se")
     private transient boolean userAttempted;
     private transient User user;
 
     /**
-     * Creates a new instance of <code>ModuleDetail</code>.
+     * Creates a new instance of {@code CulpritDetail}.
      *
-     * @param owner
-     *            current build as owner of this action.
-     * @param detailFactory
-     *            factory to create detail objects with
-     * @param file
-     *            the file to show the details for
-     * @param defaultEncoding
-     *            the default encoding to be used when reading and parsing files
-     * @param header
-     *            header to be shown on detail page
+     * @param owner current build as owner of this action.
+     * @param detailFactory factory to create detail objects with
+     * @param culpritContainer the culprit to show the details for
+     * @param defaultEncoding the default encoding to be used when reading and parsing files
+     * @param header header to be shown on detail page
      */
     public CulpritDetail(final AbstractBuild<?, ?> owner, final DetailFactory detailFactory, final CulpritAnnotationContainer culpritContainer, final String defaultEncoding, final String header) {
         super(owner, detailFactory, culpritContainer.getAnnotations(), defaultEncoding, header, culpritContainer.getHierarchy());
@@ -48,21 +46,27 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
         return "".equals(culpritName) ? "Unknown users" : culpritName;
     }
 
+    /**
+     * Get a {@code User} that corresponds to this culprit.
+     *
+     * @return a {@code User} or {@code null} if one can't be created.
+     */
     public User getUser() {
-        if(userAttempted) {
+        if (userAttempted) {
             return user;
         }
         userAttempted = true;
-        if("".equals(culpritName)) {
+        if ("".equals(culpritName)) {
             return null;
         }
         SCM scm = getOwner().getProject().getScm();
-        if((scm == null) || (scm instanceof NullSCM)) {
+        if ((scm == null) || (scm instanceof NullSCM)) {
             scm = getOwner().getProject().getRootProject().getScm();
         }
         try {
             user = GitFileAnnotationBlamer.findOrCreateUser(culpritName, culpritEmail, scm);
-        } catch(NoClassDefFoundError e) {
+        }
+        catch (NoClassDefFoundError e) {
             // Git wasn't installed, ignore
         }
 

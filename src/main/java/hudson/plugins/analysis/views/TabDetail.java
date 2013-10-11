@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.net.URL;
 
+import edu.umd.cs.findbugs.annotations.SuppressWarnings;
+
 import hudson.model.AbstractBuild;
 
 import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
@@ -23,8 +25,11 @@ public class TabDetail extends AbstractAnnotationsDetail {
     /** URL of the content to load. */
     private final String url;
 
+    /** Whether or not we've tried to generate the commit URLs. */
+    @SuppressWarnings("Se")
     private transient boolean commitUrlsAttempted;
     /** A cache of URLs for commit ids. */
+    @SuppressWarnings("Se")
     private transient Map<String, URL> commitUrls;
 
     /**
@@ -87,28 +92,35 @@ public class TabDetail extends AbstractAnnotationsDetail {
         return "fixed.jelly";
     }
 
-    public URL urlForCommitId(String commitId) {
-        if(commitUrlsAttempted) {
+    /**
+     * Get a repository browser link for the specified commit.
+     *
+     * @param commitId the id of the commit to be linked.
+     * @return The link or {@code null} if one is not available.
+     */
+    public URL urlForCommitId(final String commitId) {
+        if (commitUrlsAttempted) {
             return commitUrls == null ? null : commitUrls.get(commitId);
         }
         commitUrlsAttempted = true;
 
         SCM scm = getOwner().getProject().getScm();
-        if((scm == null) || (scm instanceof NullSCM)) {
+        if ((scm == null) || (scm instanceof NullSCM)) {
             scm = getOwner().getProject().getRootProject().getScm();
         }
 
         final HashSet<String> commitIds = new HashSet<String>(getAnnotations().size());
-        for(final FileAnnotation annot : getAnnotations()) {
+        for (final FileAnnotation annot : getAnnotations()) {
             commitIds.add(annot.getCulpritCommitId());
         }
         commitIds.remove(null);
         try {
             commitUrls = GitFileAnnotationBlamer.computeUrlsForCommitIds(scm, commitIds);
-            if(commitUrls != null) {
+            if (commitUrls != null) {
                 return commitUrls.get(commitId);
             }
-        } catch(NoClassDefFoundError e) {
+        }
+        catch (NoClassDefFoundError e) {
             // Git wasn't installed, ignore
         }
 

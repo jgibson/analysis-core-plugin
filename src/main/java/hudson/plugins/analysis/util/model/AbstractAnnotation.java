@@ -183,13 +183,13 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
         if (type != null) {
             type = type.intern();
         }
-        if(culpritName != null) {
+        if (culpritName != null) {
             culpritName = culpritName.intern();
         }
-        if(culpritEmail != null) {
+        if (culpritEmail != null) {
             culpritEmail = culpritEmail.intern();
         }
-        if(culpritCommitId != null) {
+        if (culpritCommitId != null) {
             culpritCommitId = culpritCommitId.intern();
         }
         return this;
@@ -434,7 +434,7 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
     }
 
     /** {@inheritDoc} */
-    public void setCulpritName(String culpritName) {
+    public void setCulpritName(final String culpritName) {
         this.culpritName = culpritName;
     }
 
@@ -444,7 +444,7 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
     }
 
     /** {@inheritDoc} */
-    public void setCulpritEmail(String culpritEmail) {
+    public void setCulpritEmail(final String culpritEmail) {
         this.culpritEmail = culpritEmail;
     }
 
@@ -454,7 +454,7 @@ public abstract class AbstractAnnotation implements FileAnnotation, Serializable
     }
 
     /** {@inheritDoc} */
-    public void setCulpritCommitId(String commitId) {
+    public void setCulpritCommitId(final String commitId) {
         this.culpritCommitId = commitId;
     }
 

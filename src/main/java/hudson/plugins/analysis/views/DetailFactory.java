@@ -164,7 +164,7 @@ public class DetailFactory {
             DefaultAnnotationContainer type = container.getType(createHashCode(link, "type."));
             return createAttributeDetail(owner, type, displayName, Messages.TypeDetail_header(), defaultEncoding);
         }
-        else if(link.startsWith("culprit.")) {
+        else if (link.startsWith("culprit.")) {
             return new CulpritDetail(owner, this, container.getCulprit(createHashCode(link, "culprit.")), defaultEncoding, displayName);
         }
         return null;

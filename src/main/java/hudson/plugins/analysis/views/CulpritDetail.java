@@ -38,7 +38,7 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
      *            header to be shown on detail page
      */
     public CulpritDetail(final AbstractBuild<?, ?> owner, final DetailFactory detailFactory, final CulpritAnnotationContainer culpritContainer, final String defaultEncoding, final String header) {
-        super(owner, detailFactory, culpritContainer.getAnnotations(), defaultEncoding, header, Hierarchy.USER);
+        super(owner, detailFactory, culpritContainer.getAnnotations(), defaultEncoding, header, culpritContainer.getHierarchy());
         this.culpritName = culpritContainer.getFullName();
         this.culpritEmail = culpritContainer.getEmail();
     }

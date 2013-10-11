@@ -14,6 +14,7 @@ import hudson.plugins.analysis.Messages;
 import hudson.plugins.analysis.core.ResultAction;
 import hudson.plugins.analysis.core.BuildResult;
 import hudson.plugins.analysis.util.model.AnnotationContainer;
+import hudson.plugins.analysis.util.model.CulpritAnnotationContainer;
 import hudson.plugins.analysis.util.model.DefaultAnnotationContainer;
 import hudson.plugins.analysis.util.model.FileAnnotation;
 import hudson.plugins.analysis.util.model.LineRange;

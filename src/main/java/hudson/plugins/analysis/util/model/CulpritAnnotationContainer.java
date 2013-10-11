@@ -19,8 +19,8 @@ public class CulpritAnnotationContainer extends AnnotationContainer {
      * @param annotations
      *            the annotations to be stored
      */
-    public CulpritAnnotationContainer(final String culpritName, final String culpritEmail) {
-        super(culpritName + culpritEmail, Hierarchy.USER);
+    public CulpritAnnotationContainer(final String culpritName, final String culpritEmail, final Hierarchy hierarchy) {
+        super(culpritName + culpritEmail, hierarchy);
         this.fullName = culpritName;
         this.email = culpritEmail;
     }
@@ -44,7 +44,6 @@ public class CulpritAnnotationContainer extends AnnotationContainer {
      */
     private Object readResolve() {
         // NOTSURE if this is necessary because the superclass calls this
-        setHierarchy(Hierarchy.USER);
         rebuildMappings();
         return this;
     }

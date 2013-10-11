@@ -40,8 +40,14 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         PACKAGE,
         /** File level. */
         FILE,
-        /** User level. */
-        USER,
+        /** User project level. */
+        USER_PROJECT,
+        /** User module level. */
+        USER_MODULE,
+        /** User package level. */
+        USER_PACKAGE,
+        /** User file level. */
+        USER_FILE,
     }
 
     /** The annotations mapped by their key. */
@@ -138,6 +144,15 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
     }
 
     /**
+     * Get the container hierarchy.
+     *
+     * @return the container hierarchy.
+     */
+    public Hierarchy getHierarchy() {
+        return hierarchy;
+    }
+
+    /**
      * Returns the name of this container.
      *
      * @return the name of this container
@@ -203,6 +218,7 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
      *
      * @param annotation the new annotation
      */
+    @java.lang.SuppressWarnings("fallthrough")
     private void updateMappings(final FileAnnotation annotation) {
         annotationsByPriority.get(annotation.getPriority()).add(annotation);
         if (StringUtils.isNotBlank(annotation.getCategory())) {
@@ -211,17 +227,27 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         if (StringUtils.isNotBlank(annotation.getType())) {
             addType(annotation);
         }
-        if(hierarchy != Hierarchy.USER) {
-            addCulpritName(annotation);
+        switch(hierarchy) {
+            case USER_PROJECT:
+            case USER_MODULE:
+            case USER_PACKAGE:
+            case USER_FILE:
+                break;
+            default:
+                addCulpritName(annotation);
         }
-        if (hierarchy == Hierarchy.PROJECT) {
-            addModule(annotation);
-        }
-        if (hierarchy == Hierarchy.PROJECT || hierarchy == Hierarchy.MODULE) {
-            addPackage(annotation);
-        }
-        if (hierarchy == Hierarchy.PROJECT || hierarchy == Hierarchy.MODULE || hierarchy == Hierarchy.PACKAGE) {
-            addFile(annotation);
+        switch(hierarchy) {
+            case PROJECT:
+            case USER_PROJECT:
+                addModule(annotation);
+            case MODULE:
+            case USER_MODULE:
+                addPackage(annotation);
+            case USER_PACKAGE:
+            case PACKAGE:
+                addFile(annotation);
+                break;
+            default:
         }
     }
 
@@ -336,7 +362,25 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
         }
         String key = culpritName + culpritEmail;
         if(!culpritsByName.containsKey(key)) {
-            CulpritAnnotationContainer container = new CulpritAnnotationContainer(culpritName, culpritEmail);
+            Hierarchy targeth = null;
+            switch(hierarchy) {
+                case PROJECT:
+                    targeth = Hierarchy.USER_PROJECT;
+                    break;
+                case MODULE:
+                    targeth = Hierarchy.USER_MODULE;
+                    break;
+                case PACKAGE:
+                    targeth = Hierarchy.USER_PACKAGE;
+                    break;
+                case FILE:
+                    targeth = Hierarchy.USER_FILE;
+                    break;
+                default:
+                    // This should never happen.  Should we throw an error here for sanity checking?
+                    return;
+            }
+            CulpritAnnotationContainer container = new CulpritAnnotationContainer(culpritName, culpritEmail, targeth);
             culpritsByName.put(key, container);
             culpritsByHashCode.put(key.hashCode(), container);
         }

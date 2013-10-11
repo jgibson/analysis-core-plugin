@@ -43,23 +43,9 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
         this.culpritEmail = culpritContainer.getEmail();
     }
 
-    /**
-     * Returns the header for the detail screen.
-     *
-     * @return the header
-     */
-    @Override
-    public String getHeader() {
-        if("".equals(culpritName)) {
-            return getName() + " - Unknown users";
-        } else {
-            return getName() + " - " + culpritName;
-        }
-    }
-
     /** {@inheritDoc} */
     public String getDisplayName() {
-        return culpritName;
+        return "".equals(culpritName) ? "Unknown users" : culpritName;
     }
 
     public User getUser() {

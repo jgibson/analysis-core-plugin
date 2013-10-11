@@ -33,6 +33,10 @@ public class CulpritAnnotationContainer extends AnnotationContainer {
         return email;
     }
 
+    public String getDisplayName() {
+        return "".equals(getFullName()) ? "Unknown users" : getFullName();
+    }
+
     /**
      * Rebuilds the priorities mapping.
      *

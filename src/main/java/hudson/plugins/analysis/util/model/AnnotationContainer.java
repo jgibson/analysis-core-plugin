@@ -326,16 +326,21 @@ public abstract class AnnotationContainer implements AnnotationProvider, Seriali
      */
     private void addCulpritName(final FileAnnotation annotation) {
         String culpritName = annotation.getCulpritName();
-        // We'll just assume that culpritName will never be empty
+        String culpritEmail = annotation.getCulpritEmail();
+        // We'll just assume that these will never be empty (but could be null).
         if(culpritName == null) {
             culpritName = "";
         }
-        if(!culpritsByName.containsKey(culpritName)) {
-            CulpritAnnotationContainer container = new CulpritAnnotationContainer(culpritName);
-            culpritsByName.put(culpritName, container);
-            culpritsByHashCode.put(culpritName.hashCode(), container);
+        if(culpritEmail == null) {
+            culpritEmail = "";
         }
-        culpritsByName.get(culpritName).addAnnotation(annotation);
+        String key = culpritName + culpritEmail;
+        if(!culpritsByName.containsKey(key)) {
+            CulpritAnnotationContainer container = new CulpritAnnotationContainer(culpritName, culpritEmail);
+            culpritsByName.put(key, container);
+            culpritsByHashCode.put(key.hashCode(), container);
+        }
+        culpritsByName.get(key).addAnnotation(annotation);
     }
 
     /**

@@ -1,7 +1,11 @@
 package hudson.plugins.analysis.views;
 
 import hudson.model.AbstractBuild;
+import hudson.model.User;
+import hudson.plugins.analysis.util.GitFileAnnotationBlamer;
 import hudson.plugins.analysis.util.model.CulpritAnnotationContainer;
+import hudson.scm.NullSCM;
+import hudson.scm.SCM;
 
 /**
  * Details for a particular person.
@@ -12,8 +16,12 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
     /** Unique identifier of this class. */
     private static final long serialVersionUID = -5907296989102083012L;
 
-    /** The package to show the details for. */
+    /** The culprit to show the details for. */
     private final String culpritName;
+    private final String culpritEmail;
+
+    private transient boolean userAttempted;
+    private transient User user;
 
     /**
      * Creates a new instance of <code>ModuleDetail</code>.
@@ -31,7 +39,8 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
      */
     public CulpritDetail(final AbstractBuild<?, ?> owner, final DetailFactory detailFactory, final CulpritAnnotationContainer culpritContainer, final String defaultEncoding, final String header) {
         super(owner, detailFactory, culpritContainer.getAnnotations(), defaultEncoding, header, Hierarchy.USER);
-        this.culpritName = culpritContainer.getName();
+        this.culpritName = culpritContainer.getFullName();
+        this.culpritEmail = culpritContainer.getEmail();
     }
 
     /**
@@ -41,11 +50,36 @@ public class CulpritDetail extends AbstractAnnotationsDetail {
      */
     @Override
     public String getHeader() {
-        return getName() + " - " + culpritName;
+        if("".equals(culpritName)) {
+            return getName() + " - Unknown users";
+        } else {
+            return getName() + " - " + culpritName;
+        }
     }
 
     /** {@inheritDoc} */
     public String getDisplayName() {
         return culpritName;
+    }
+
+    public User getUser() {
+        if(userAttempted) {
+            return user;
+        }
+        userAttempted = true;
+        if("".equals(culpritName)) {
+            return null;
+        }
+        SCM scm = getOwner().getProject().getScm();
+        if((scm == null) || (scm instanceof NullSCM)) {
+            scm = getOwner().getProject().getRootProject().getScm();
+        }
+        try {
+            user = GitFileAnnotationBlamer.findOrCreateUser(culpritName, culpritEmail, scm);
+        } catch(NoClassDefFoundError e) {
+            // Git wasn't installed, ignore
+        }
+
+        return user;
     }
 }

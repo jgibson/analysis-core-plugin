@@ -1,7 +1,5 @@
 package hudson.plugins.analysis.util.model;
 
-import java.util.Collection;
-
 /**
  * A container for culprit annotations.
  *
@@ -10,17 +8,8 @@ import java.util.Collection;
 public class CulpritAnnotationContainer extends AnnotationContainer {
     private static final long serialVersionUID = 5504146567211894175L;
 
-    /**
-     * Creates a new instance of {@link CulpritAnnotationContainer}.
-     *
-     * @param name
-     *            the name of this container
-     * @param annotations
-     *            the annotations to be stored
-     */
-    public CulpritAnnotationContainer(final String culpritName) {
-        this(culpritName, null);
-    }
+    private String fullName;
+    private String email;
 
     /**
      * Creates a new instance of {@link CulpritAnnotationContainer}.
@@ -30,11 +19,18 @@ public class CulpritAnnotationContainer extends AnnotationContainer {
      * @param annotations
      *            the annotations to be stored
      */
-    public CulpritAnnotationContainer(final String culpritName, final Collection<FileAnnotation> annotations) {
-        super(culpritName, Hierarchy.USER);
-        if(annotations != null) {
-            addAnnotations(annotations);
-        }
+    public CulpritAnnotationContainer(final String culpritName, final String culpritEmail) {
+        super(culpritName + culpritEmail, Hierarchy.USER);
+        this.fullName = culpritName;
+        this.email = culpritEmail;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     /**

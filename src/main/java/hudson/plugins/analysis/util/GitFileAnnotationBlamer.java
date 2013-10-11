@@ -3,10 +3,12 @@ package hudson.plugins.analysis.util;
 import hudson.EnvVars;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
+import hudson.model.User;
 import hudson.plugins.analysis.core.ParserResult;
 import hudson.plugins.analysis.util.model.FileAnnotation;
 import hudson.plugins.git.GitSCM;
 import hudson.scm.SCM;
+import hudson.tasks.Mailer;
 
 import java.io.File;
 import java.io.IOException;
@@ -141,5 +143,53 @@ public class GitFileAnnotationBlamer {
             }
             annot.setCulpritCommitId(commit == null ? null : commit.getName());
         }
+    }
+
+    /**
+     * Returns user of the change set.  Stolen from hudson.plugins.git.GitChangeSet.
+     *
+     * @param csAuthor user name.
+     * @param csAuthorEmail user email.
+     * @param createAccountBasedOnEmail true if create new user based on committer's email.
+     * @return {@link User}
+     */
+    public static User findOrCreateUser(String fullName, String email, SCM scm) {
+        if(!(scm instanceof GitSCM)) {
+            return null;
+        }
+
+        GitSCM gscm = (GitSCM) scm;
+        boolean createAccountBasedOnEmail = gscm.isCreateAccountBasedOnEmail();
+
+        User user;
+        if (createAccountBasedOnEmail) {
+            user = User.get(email, false);
+
+            if (user == null) {
+                try {
+                    user = User.get(email, true);
+                    user.setFullName(fullName);
+                    user.addProperty(new Mailer.UserProperty(email));
+                    user.save();
+                } catch (IOException e) {
+                    // add logging statement?
+                }
+            }
+        } else {
+            user = User.get(fullName, false);
+
+            if (user == null)
+                user = User.get(email.split("@")[0], true);
+        }
+        // set email address for user if none is already available
+        // Let's not do this because git plugin 1.2.0 doesn't.
+//        if (fixEmpty(csAuthorEmail) != null && !isMailerPropertySet(user)) {
+//            try {
+//                user.addProperty(new Mailer.UserProperty(csAuthorEmail));
+//            } catch (IOException e) {
+//                // ignore error
+//            }
+//        }
+        return user;
     }
 }

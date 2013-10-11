@@ -14,7 +14,7 @@
       <j:forEach var="container" items="${it.container.culprits}">
         <tr>
           <td class="pane">
-            <a href="culprit.${container.name.hashCode()}/">${container.name}</a>
+            <a href="culprit.${container.name.hashCode()}/">${container.fullName}</a>
           </td>
           <td class="pane">${container.numberOfAnnotations}
           </td>

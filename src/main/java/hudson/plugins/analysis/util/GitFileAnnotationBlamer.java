@@ -16,8 +16,10 @@ import hudson.tasks.Mailer;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -115,9 +117,9 @@ public class GitFileAnnotationBlamer {
             blame.setStartCommit(headCommit);
             try {
                 BlameResult result = blame.call();
-                //BlameGenerator gen = new BlameGenerator(git.getRepository(), child);
-                //gen.push("CurrentHead", headCommit);
-                //BlameResult blame = gen.computeBlameResult();
+                if(result == null) {
+                    logger.log("No blame results for file: " + child);
+                }
                 blameResults.put(child, result);
                 if(Thread.interrupted()) {
                     throw new InterruptedException("Thread was interrupted while computing blame information.");
@@ -129,6 +131,7 @@ public class GitFileAnnotationBlamer {
             }
         }
 
+        HashSet<String> missingBlame = new HashSet<String>();
         for(final FileAnnotation annot : analysisResult.getAnnotations()) {
             if(annot.getPrimaryLineNumber() <= 0) {
                 continue;
@@ -139,7 +142,6 @@ public class GitFileAnnotationBlamer {
             }
             BlameResult blame = blameResults.get(child);
             if(blame == null) {
-                logger.log("No blame result available for: " + annot);
                 continue;
             }
             int zeroline = annot.getPrimaryLineNumber() - 1;
@@ -149,10 +151,20 @@ public class GitFileAnnotationBlamer {
                 if(who != null) {
                     annot.setCulpritName(who.getName());
                     annot.setCulpritEmail(who.getEmailAddress());
+                } else {
+                    missingBlame.add(child);
                 }
                 annot.setCulpritCommitId(commit == null ? null : commit.getName());
             } catch(ArrayIndexOutOfBoundsException e) {
                 logger.log("Blame details were out of bounds for line number " + annot.getPrimaryLineNumber() + " in file " + child);
+            }
+        }
+
+        if(!missingBlame.isEmpty()) {
+            ArrayList<String> l = new ArrayList<String>(missingBlame);
+            Collections.sort(l);
+            for(final String child : l) {
+                logger.log("Blame details were incomplete for file: " + child);
             }
         }
     }
